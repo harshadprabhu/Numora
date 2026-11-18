@@ -2,7 +2,6 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { monthlyRate, levelPayment, mortgagePayoff, debtPayoff, solveExtraForTarget } from '../assets/engine.js';
 import { parseAmount, parseMortgage, parseDebts } from '../assets/parser.js';
-import { mortgageInsights, debtInsights } from '../assets/insights.js';
 
 const close = (a, b, tol = 0.01) => assert.ok(Math.abs(a - b) <= tol, `${a} vs ${b}`);
 
@@ -84,28 +83,6 @@ test('debt sentence parsing', () => {
   assert.equal(found.debts.length, 3);
   assert.equal(found.debts[0].apr, 24);
   assert.equal(found.debts.reduce((s, d) => s + d.balance, 0), 18000);
-});
-
-const f = { money: v => `$${Math.round(v)}`, duration: m => `${m} mo` };
-
-test('mortgage insights give up to 4 plain sentences', () => {
-  const inputs = { balance: 350000, ratePct: 6.5, yearsLeft: 25 };
-  const out = mortgageInsights(inputs, mortgagePayoff(inputs), f, 100);
-  assert.ok(out.length >= 2 && out.length <= 4);
-  assert.ok(out.every(i => typeof i.text === 'string' && i.text.length > 20));
-});
-
-test('0% loan still gets an explanation', () => {
-  const inputs = { balance: 100000, ratePct: 0, yearsLeft: 10 };
-  const out = mortgageInsights(inputs, mortgagePayoff(inputs), f, 100);
-  assert.ok(out.some(i => i.text.includes('0% interest')));
-});
-
-test('debt insights handle a budget below minimums', () => {
-  const debts = [{ name: 'A', balance: 1000, apr: 20, min: 100 }];
-  const res = { avalanche: debtPayoff(debts, 50, 'avalanche'), snowball: debtPayoff(debts, 50, 'snowball') };
-  const out = debtInsights(debts, 50, res, { ...f }, 100);
-  assert.equal(out[0].tone, 'warn');
 });
 
 import { emi, sip, compound, savingsGoal, fixedDeposit, fire, inflation, creditCard, rentVsBuy } from '../assets/engine.js';

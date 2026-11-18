@@ -1,109 +1,156 @@
-// Numi chat UI: messages, suggestion chips, voice input and read-aloud. No network.
+// Numi corner widget: floating orb + chat panel, voice in, read-aloud. No network.
 import { respond, starterChips } from './numi-brain.js';
-import { COUNTRIES, detectCountry } from './locale.js';
+import { makeT } from './i18n.js';
+import { localeOf } from './countries.js';
 
 const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const SR = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
 
-export function mountChat(host, { compact = false } = {}) {
+export function mountNumi(getState, onNavigate) {
   let ctx = {};
-  let speakOn = false;
-  try { speakOn = localStorage.getItem('numora.speak') === '1'; } catch (_) {}
-  const country = () => (document.getElementById('country')?.value) || detectCountry();
+  let open = false;
+  let speak = false;
+  try { speak = localStorage.getItem('numora.speak') === '1'; } catch (_) {}
 
-  host.innerHTML = `
-    <div class="chat ${compact ? 'compact' : ''}">
-      <div class="chat-head">
-        <div class="numi-avatar" aria-hidden="true"><span></span></div>
-        <div><div class="chat-title">Numi</div><div class="chat-sub">Your money assistant · private, runs on your device</div></div>
-        <button class="icon-btn speak-toggle" aria-pressed="${speakOn}" title="Read answers aloud" aria-label="Read answers aloud">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H3v6h3l5 4zM15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>
-        </button>
-      </div>
-      <div class="chat-log" role="log" aria-live="polite"></div>
-      <form class="chat-input" autocomplete="off">
-        <label class="sr-only" for="numi-in-${compact ? 's' : 'p'}">Ask Numi</label>
-        <textarea id="numi-in-${compact ? 's' : 'p'}" rows="1" placeholder="Ask a money question…"></textarea>
-        ${SR ? `<button type="button" class="icon-btn mic" aria-label="Speak your question"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>` : ''}
-        <button class="send" aria-label="Send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+  const root = document.createElement('div');
+  root.className = 'numi';
+  root.innerHTML = `
+    <div class="numi-hint" aria-hidden="true"></div>
+    <button class="numi-fab tap" aria-expanded="false" aria-controls="numi-panel"><span class="orb"><i></i></span><span class="sr-only fab-label"></span></button>
+    <section class="numi-panel" id="numi-panel" role="dialog" aria-modal="false" hidden>
+      <header>
+        <span class="orb sm"><i></i></span>
+        <div><b>Numi</b><small class="sub"></small></div>
+        <button class="ib tap speak" aria-pressed="${speak}"><svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4zM15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg></button>
+        <button class="ib tap close" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </header>
+      <div class="log" role="log" aria-live="polite"></div>
+      <form class="composer">
+        <textarea rows="1" aria-label="Message"></textarea>
+        ${SR ? '<button type="button" class="ib tap mic" aria-label="Voice"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>' : ''}
+        <button class="send tap" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
       </form>
-    </div>`;
+    </section>`;
+  document.body.appendChild(root);
 
-  const log = host.querySelector('.chat-log');
-  const form = host.querySelector('form');
-  const box = host.querySelector('textarea');
-  const speakBtn = host.querySelector('.speak-toggle');
+  const fab = root.querySelector('.numi-fab');
+  const panel = root.querySelector('.numi-panel');
+  const log = root.querySelector('.log');
+  const form = root.querySelector('form');
+  const box = root.querySelector('textarea');
+  const hint = root.querySelector('.numi-hint');
+
+  function labels() {
+    const { lang } = getState();
+    const t = makeT(lang);
+    root.querySelector('.sub').textContent = t('n.sub');
+    root.querySelector('.fab-label').textContent = t('ask');
+    fab.setAttribute('aria-label', t('ask'));
+    box.placeholder = t('n.ph');
+    hint.textContent = t('ask');
+    root.querySelector('.speak').setAttribute('aria-label', t('n.listen'));
+  }
 
   const scroll = () => { log.scrollTop = log.scrollHeight; };
-  const addUser = text => { log.insertAdjacentHTML('beforeend', `<div class="msg me"><div class="bubble">${esc(text)}</div></div>`); scroll(); };
-
+  function addUser(text) { log.insertAdjacentHTML('beforeend', `<div class="m me"><p>${esc(text)}</p></div>`); scroll(); }
   function addBot(r) {
-    const stats = (r.stats || []).slice(0, 4).map(s => `<div class="mstat"><div>${esc(s.label)}</div><b>${esc(s.value)}</b></div>`).join('');
-    const tips = (r.tips || []).map(t => `<div class="mtip">💡 ${esc(t)}</div>`).join('');
-    const chips = (r.chips || []).map(ch => `<button type="button" class="chip-btn">${esc(ch)}</button>`).join('');
-    const html = `<div class="msg bot"><div class="numi-avatar sm" aria-hidden="true"><span></span></div><div class="bubble card-bubble">
-      ${r.title ? `<div class="mtitle">${esc(r.title)}</div>` : ''}
-      <div class="mtext">${esc(r.text)}</div>
-      ${stats ? `<div class="mstats">${stats}</div>` : ''}${tips}
-      ${r.link ? `<a class="btn mlink" href="${esc(r.link.href)}">${esc(r.link.label)} →</a>` : ''}
-      ${chips ? `<div class="mchips">${chips}</div>` : ''}
-    </div></div>`;
-    log.insertAdjacentHTML('beforeend', html);
-    log.lastElementChild.querySelectorAll('.chip-btn').forEach(b => b.addEventListener('click', () => ask(b.textContent)));
+    const { country } = getState();
+    const stats = (r.stats || []).slice(0, 3).map(s => `<div><small>${esc(s.label)}</small><b>${esc(s.value)}</b></div>`).join('');
+    const chips = (r.chips || []).map(c => `<button type="button" class="chip tap">${esc(c)}</button>`).join('');
+    log.insertAdjacentHTML('beforeend', `<div class="m bot" lang="${r.lang}" dir="${r.lang === 'ar' ? 'rtl' : 'auto'}">
+      ${r.title ? `<em>${esc(r.title)}</em>` : ''}<p>${esc(r.text)}</p>
+      ${stats ? `<div class="mstats">${stats}</div>` : ''}
+      ${(r.tips || []).map(x => `<p class="tip">${esc(x)}</p>`).join('')}
+      ${r.link ? `<a class="go tap" href="${esc(r.link.href)}">${esc(r.link.label)} →</a>` : ''}
+      ${chips ? `<div class="chips">${chips}</div>` : ''}</div>`);
+    const last = log.lastElementChild;
+    last.querySelectorAll('.chip').forEach(b => b.addEventListener('click', () => ask(b.textContent)));
+    const go = last.querySelector('.go');
+    if (go) go.addEventListener('click', e => { e.preventDefault(); onNavigate(go.getAttribute('href')); if (matchMedia('(max-width: 900px)').matches) toggle(false); });
     scroll();
-    if (speakOn && 'speechSynthesis' in window) {
+    if (speak && 'speechSynthesis' in window) {
       speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(r.text.replace(/\(I assumed.*\)/, ''));
-      u.lang = COUNTRIES[country()].locale;
+      const u = new SpeechSynthesisUtterance(r.text);
+      u.lang = localeOf(country, r.lang);
       speechSynthesis.speak(u);
     }
   }
 
   function ask(text) {
-    if (!text.trim()) return;
+    if (!String(text).trim()) return;
+    if (!open) toggle(true);
     addUser(text);
     const typing = document.createElement('div');
-    typing.className = 'msg bot typing';
-    typing.innerHTML = '<div class="numi-avatar sm"><span></span></div><div class="bubble"><i></i><i></i><i></i></div>';
+    typing.className = 'm bot typing';
+    typing.innerHTML = '<i></i><i></i><i></i>';
     log.appendChild(typing); scroll();
     setTimeout(() => {
       typing.remove();
-      const r = respond(text, ctx, country());
+      const { country, lang } = getState();
+      const r = respond(text, ctx, country, lang);
       ctx = r.ctx || ctx;
       addBot(r);
-      if (r.navigate) setTimeout(() => (location.href = r.navigate), 600);
-    }, 350);
+    }, 320);
   }
 
-  addBot({ text: `Hi, I'm Numi 👋 Ask me any money question in plain words, like you'd ask a friend who's good with numbers. You can type or ${SR ? 'tap the mic and ' : ''}speak.`, chips: starterChips(COUNTRIES[country()]) });
+  function greet() {
+    const { country, lang } = getState();
+    log.innerHTML = '';
+    addBot({ lang, text: makeT(lang)('n.hi'), chips: starterChips(country, lang) });
+  }
 
+  function toggle(force) {
+    open = force ?? !open;
+    fab.setAttribute('aria-expanded', String(open));
+    root.classList.toggle('open', open);
+    if (open) {
+      panel.hidden = false;
+      requestAnimationFrame(() => panel.classList.add('in'));
+      if (!log.children.length) greet();
+      setTimeout(() => box.focus(), 250);
+    } else {
+      panel.classList.remove('in');
+      setTimeout(() => { if (!open) panel.hidden = true; }, 220);
+    }
+  }
+
+  fab.addEventListener('click', () => toggle());
+  root.querySelector('.close').addEventListener('click', () => toggle(false));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && open) toggle(false); });
   form.addEventListener('submit', e => { e.preventDefault(); const q = box.value; box.value = ''; box.style.height = ''; ask(q); });
   box.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); } });
-  box.addEventListener('input', () => { box.style.height = 'auto'; box.style.height = Math.min(box.scrollHeight, 120) + 'px'; });
-  speakBtn.addEventListener('click', () => {
-    speakOn = !speakOn; speakBtn.setAttribute('aria-pressed', String(speakOn));
-    try { localStorage.setItem('numora.speak', speakOn ? '1' : '0'); } catch (_) {}
-    if (!speakOn && 'speechSynthesis' in window) speechSynthesis.cancel();
+  box.addEventListener('input', () => { box.style.height = 'auto'; box.style.height = Math.min(box.scrollHeight, 110) + 'px'; });
+  const sp = root.querySelector('.speak');
+  sp.addEventListener('click', () => {
+    speak = !speak; sp.setAttribute('aria-pressed', String(speak));
+    try { localStorage.setItem('numora.speak', speak ? '1' : '0'); } catch (_) {}
+    if (!speak && 'speechSynthesis' in window) speechSynthesis.cancel();
   });
-
-  const mic = host.querySelector('.mic');
-  if (mic && SR) {
+  const mic = root.querySelector('.mic');
+  if (mic) {
     let rec = null;
     mic.addEventListener('click', () => {
       if (rec) { rec.stop(); return; }
+      const { country, lang } = getState();
       rec = new SR();
-      rec.lang = COUNTRIES[country()].locale;
+      rec.lang = localeOf(country, lang);
       rec.interimResults = true;
       mic.classList.add('live');
+      box.placeholder = makeT(lang)('n.listen');
       rec.onresult = e => { box.value = [...e.results].map(x => x[0].transcript).join(' '); };
-      rec.onend = () => { mic.classList.remove('live'); rec = null; if (box.value.trim()) form.requestSubmit(); };
-      rec.onerror = () => { mic.classList.remove('live'); rec = null; };
+      rec.onend = () => { mic.classList.remove('live'); rec = null; labels(); if (box.value.trim()) form.requestSubmit(); };
+      rec.onerror = () => { mic.classList.remove('live'); rec = null; labels(); };
       rec.start();
     });
   }
 
+  labels();
+  setTimeout(() => { if (!open) { root.classList.add('hinting'); setTimeout(() => root.classList.remove('hinting'), 3200); } }, 1500);
+
   return {
     ask,
+    open: () => toggle(true),
     setContext(c) { ctx = c || {}; },
+    relabel() { labels(); if (log.children.length <= 1) greet(); },
   };
 }

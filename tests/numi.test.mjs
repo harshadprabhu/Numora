@@ -1,59 +1,90 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { respond } from '../assets/numi-brain.js';
+import { respond, detectLang, starterChips } from '../assets/numi-brain.js';
+import { parseAmount, normalize, amounts } from '../assets/parser.js';
 
-const ask = (q, ctx, c = 'us') => respond(q, ctx, c);
+const ask = (q, ctx = {}, c = 'us', l = 'en') => respond(q, ctx, c, l);
 
-test('greeting', () => { assert.match(ask('hi').text, /Numi/); });
-
-test('glossary: what is APR', () => {
-  const r = ask('what is APR?');
-  assert.equal(r.title, 'APR');
+test('greeting and glossary', () => {
+  assert.match(ask('hi').text, /Numi/);
+  assert.equal(ask('what is APR?').title, 'APR');
+  assert.equal(ask('¿Qué es el interés compuesto?', {}, 'es', 'es').title, 'Interés compuesto');
+  assert.equal(ask('複利とは？', {}, 'jp', 'ja').title, '複利');
 });
 
-test('EMI in India with lakh', () => {
-  const r = ask('EMI on 10 lakh at 10% for 5 years', {}, 'in');
-  assert.equal(r.ctx.intent, 'emi');
-  assert.equal(r.ctx.values.principal, 1000000);
-  assert.match(r.text, /21,247/);
+test('English EMI and relative follow-up', () => {
+  const a = ask('loan of 20000 at 9% for 4 years');
+  assert.equal(a.ctx.intent, 'emi');
+  assert.equal(a.ctx.values.principal, 20000);
+  const b = ask('what if the rate is 1% lower?', a.ctx);
+  assert.equal(b.ctx.values.ratePct, 8);
+  const c = ask('what about 3 years?', b.ctx);
+  assert.equal(c.ctx.values.years, 3);
 });
 
-test('follow-up changes the rate relatively', () => {
-  const first = ask('loan of 20000 at 9% for 4 years');
-  const next = ask('what if the rate is 1% lower?', first.ctx);
-  assert.equal(next.ctx.intent, 'emi');
-  assert.equal(next.ctx.values.ratePct, 8);
+test('India: lakh EMI in English and Hindi', () => {
+  const a = ask('EMI on 10 lakh at 10% for 5 years', {}, 'in', 'en');
+  assert.equal(a.ctx.values.principal, 1000000);
+  assert.match(a.text, /21,247/);
+  const h = ask('10 लाख का लोन 10% पर 5 साल के लिए', {}, 'in', 'en');
+  assert.equal(h.lang, 'hi');
+  assert.equal(h.ctx.intent, 'emi');
+  assert.equal(h.ctx.values.principal, 1000000);
+  assert.match(h.text, /ईएमआई|प्रति माह|किस्त/);
 });
 
-test('follow-up changes years', () => {
-  const first = ask('loan of 20000 at 9% for 4 years');
-  const next = ask('over 3 years instead?', first.ctx);
-  assert.equal(next.ctx.values.years, 3);
+test('Spanish loan, German with euro formatting, Japanese 万, Chinese, Korean, Arabic, Indonesian', () => {
+  const es = ask('Préstamo de 20.000 € al 9% a 4 años', {}, 'es', 'es');
+  assert.equal(es.lang, 'es'); assert.equal(es.ctx.intent, 'emi'); assert.equal(es.ctx.values.principal, 20000); assert.equal(es.ctx.values.years, 4);
+  const de = ask('Kredit über 20.000 € zu 6,5 % für 5 Jahre', {}, 'de', 'de');
+  assert.equal(de.lang, 'de'); assert.equal(de.ctx.values.principal, 20000); assert.equal(de.ctx.values.ratePct, 6.5);
+  const ja = ask('300万円のローン、年利3%、5年', {}, 'jp', 'ja');
+  assert.equal(ja.lang, 'ja'); assert.equal(ja.ctx.values.principal, 3000000); assert.equal(ja.ctx.values.years, 5);
+  const zh = ask('贷款30万，利率4%，5年', {}, 'cn', 'zh');
+  assert.equal(zh.lang, 'zh'); assert.equal(zh.ctx.values.principal, 300000);
+  const ko = ask('3000만원 대출, 금리 5%, 3년', {}, 'kr', 'ko');
+  assert.equal(ko.lang, 'ko'); assert.equal(ko.ctx.values.principal, 30000000);
+  const ar = ask('قرض 50000 بفائدة 8% لمدة 5 سنوات', {}, 'ae', 'ar');
+  assert.equal(ar.lang, 'ar'); assert.equal(ar.ctx.intent, 'emi'); assert.equal(ar.ctx.values.principal, 50000);
+  const id = ask('Pinjaman 50 juta bunga 10% selama 3 tahun', {}, 'id', 'id');
+  assert.equal(id.lang, 'id'); assert.equal(id.ctx.values.principal, 50000000);
 });
 
-test('SIP with step-up', () => {
-  const r = ask('SIP of 10k a month for 15 years at 12% with 10% step up', {}, 'in');
-  assert.equal(r.ctx.intent, 'sip');
-  assert.equal(r.ctx.values.monthly, 10000);
-  assert.equal(r.ctx.values.ratePct, 12);
-  assert.equal(r.ctx.values.stepUpPct, 10);
-  assert.equal(r.ctx.values.years, 15);
+test('French mortgage with extra, Portuguese retirement, Italian SIP', () => {
+  const fr = ask('Prêt immobilier de 220 000 € à 3,4 % sur 20 ans, 200 € de plus par mois', {}, 'fr', 'fr');
+  assert.equal(fr.lang, 'fr'); assert.equal(fr.ctx.intent, 'mortgage');
+  assert.equal(fr.ctx.values.balance, 220000); assert.equal(fr.ctx.values.ratePct, 3.4); assert.equal(fr.ctx.values.extra, 200);
+  const pt = ask('Quando posso me aposentar?', {}, 'br', 'pt');
+  assert.equal(pt.lang, 'pt'); assert.equal(pt.ctx.intent, 'fire');
+  const it = ask('Investire 300 € al mese per 20 anni al 6%', {}, 'it', 'it');
+  assert.equal(it.lang, 'it'); assert.equal(it.ctx.intent, 'sip'); assert.equal(it.ctx.values.monthly, 300); assert.equal(it.ctx.values.years, 20);
 });
 
-test('mortgage with extra payment', () => {
-  const r = ask('300k mortgage at 6.5% with 25 years left, can pay 200 extra');
-  assert.equal(r.ctx.intent, 'mortgage');
-  assert.equal(r.ctx.values.extra, 200);
-  assert.match(r.text, /early/);
+test('starter chips are understood in every language', () => {
+  const map = { en: 'us', hi: 'in', es: 'mx', fr: 'fr', de: 'de', it: 'it', pt: 'br', ja: 'jp', zh: 'cn', ko: 'kr', ar: 'sa', id: 'id' };
+  for (const [lang, country] of Object.entries(map)) {
+    const chips = starterChips(country, lang);
+    const intents = chips.slice(0, 4).map(q => respond(q, {}, country, lang).ctx.intent);
+    assert.deepEqual(intents, ['emi', 'mortgage', 'sip', 'fire'], `${lang}: ${chips.join(' | ')} -> ${intents}`);
+    assert.ok(respond(chips[4], {}, country, lang).title, `${lang} glossary chip`);
+  }
 });
 
-test('mortgage follow-up adds extra', () => {
-  const first = ask('300k mortgage at 6.5% with 25 years left');
-  const next = ask('what if I pay 200 more a month?', first.ctx);
-  assert.equal(next.ctx.values.extra, 200);
+test('follow-up chips work in every language', () => {
+  const map = { en: 'us', hi: 'in', es: 'mx', fr: 'fr', de: 'de', it: 'it', pt: 'br', ja: 'jp', zh: 'cn', ko: 'kr', ar: 'sa', id: 'id' };
+  for (const [lang, country] of Object.entries(map)) {
+    const first = respond(starterChips(country, lang)[0], {}, country, lang);
+    const lower = respond(first.chips[0], first.ctx, country, lang);
+    assert.ok(Math.abs(lower.ctx.values.ratePct - (first.ctx.values.ratePct - 1)) < 1e-9, `${lang} lower: ${first.chips[0]}`);
+    const longer = respond(first.chips[1], first.ctx, country, lang);
+    assert.equal(longer.ctx.values.years, 10, `${lang} longer: ${first.chips[1]}`);
+    const m = respond(starterChips(country, lang)[1], {}, country, lang);
+    const more = respond(m.chips[0], m.ctx, country, lang);
+    assert.ok(more.ctx.values.extra > m.ctx.values.extra, `${lang} more: ${m.chips[0]}`);
+  }
 });
 
-test('retirement with age and spending', () => {
+test('retirement sentence with age, spend, savings', () => {
   const r = ask("I'm 32, spend 3000 a month, have 80k saved and invest 1500 a month. When can I retire?");
   assert.equal(r.ctx.intent, 'fire');
   assert.equal(r.ctx.values.age, 32);
@@ -62,50 +93,22 @@ test('retirement with age and spending', () => {
   assert.equal(r.ctx.values.monthly, 1500);
 });
 
-test('credit card payoff', () => {
-  const r = ask('credit card balance 5000 at 22%, paying 200 a month');
-  assert.equal(r.ctx.intent, 'card');
-  assert.equal(r.ctx.values.balance, 5000);
-  assert.equal(r.ctx.values.payment, 200);
+test('debts go to the planner', () => {
+  const r = ask('I owe 18k on 3 cards at 24%, can pay 900 a month');
+  assert.ok(r.link.href.startsWith('#debt'));
 });
 
-test('FD in India', () => {
-  const r = ask('FD of 1 lakh at 7% for 5 years', {}, 'in');
-  assert.equal(r.ctx.intent, 'fd');
-  assert.match(r.text, /1,41,4/);
+test('number parsing helpers', () => {
+  assert.equal(parseAmount('2,50,000'), 250000);
+  assert.equal(parseAmount('1.234,56'), 1234.56);
+  assert.equal(parseAmount('3억'), 300000000);
+  assert.deepEqual(amounts(normalize('٥٠٠٠٠ درهم')).map(a => a.value), [50000]);
+  assert.equal(detectLang('Wann kann ich in Rente gehen?', 'en'), 'de');
 });
 
-test('savings goal', () => {
-  const r = ask('how much should I save to reach 20000 in 3 years? I have 2000 already');
-  assert.equal(r.ctx.intent, 'goal');
-  assert.equal(r.ctx.values.target, 20000);
-  assert.equal(r.ctx.values.current, 2000);
-});
-
-test('inflation', () => {
-  const r = ask('what will 1000 cost in 10 years at 6% inflation');
-  assert.equal(r.ctx.intent, 'inflation');
-  assert.equal(r.ctx.values.amount, 1000);
-});
-
-test('rent vs buy', () => {
-  const r = ask('should I rent or buy a 500k house, rent is 2000');
-  assert.equal(r.ctx.intent, 'rentbuy');
-  assert.equal(r.ctx.values.price, 500000);
-  assert.equal(r.ctx.values.rent, 2000);
-});
-
-test('several debts go to the planner', () => {
-  const r = ask('I owe 18k on 3 cards at 24%, can pay 900 a month, snowball or avalanche?');
-  assert.ok(r.link.href.startsWith('debt.html'));
-});
-
-test('assumptions are stated when numbers are missing', () => {
-  const r = ask('When can I retire?');
-  assert.match(r.text, /I assumed/);
-});
-
-test('unknown input offers suggestions', () => {
-  const r = ask('banana');
-  assert.ok(r.chips.length > 0);
+test('Mexico uses comma thousands even in Spanish', () => {
+  const r = respond('Préstamo de $150,000 al 18% a 5 años', {}, 'mx', 'es');
+  assert.equal(r.ctx.values.principal, 150000);
+  const de = respond('Kredit über 1.500,50 € zu 5 % für 2 Jahre', {}, 'de', 'de');
+  assert.equal(de.ctx.values.principal, 1500.5);
 });

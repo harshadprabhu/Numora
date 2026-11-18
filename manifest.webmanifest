@@ -1,19 +1,42 @@
 {
   "name": "Numora — money calculators & Numi",
   "short_name": "Numora",
-  "description": "Money calculators for your country, and Numi, a private money assistant.",
+  "description": "Money calculators for 26 countries in 12 languages, with Numi, a private money assistant.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#060a14",
-  "theme_color": "#060a14",
+  "background_color": "#050507",
+  "theme_color": "#050507",
   "icons": [
-    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ],
   "shortcuts": [
-    { "name": "Ask Numi", "url": "ask.html" },
-    { "name": "Mortgage payoff", "url": "mortgage.html" }
+    {
+      "name": "Ask Numi",
+      "url": "./?ask=hi"
+    },
+    {
+      "name": "Mortgage payoff",
+      "url": "./#mortgage"
+    },
+    {
+      "name": "Loan / EMI",
+      "url": "./#emi"
+    }
   ]
 }

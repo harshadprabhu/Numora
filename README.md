@@ -1,40 +1,36 @@
 # Numora (working name)
 
-Money calculators that explain your answer, localized for each country. **Preview build**: not indexed by search engines.
+Money calculators that feel like an app, localized for 26 countries and 12 languages, with **Numi**, a private money assistant in the corner. **Preview build**: hidden from search engines.
 
 **Live preview:** https://harshadprabhu.github.io/Numora/
 
 ## What's in this preview
-- **App-style interface**: home dashboard, bottom tab bar on phones, sticky result bar, dark/light themes, installable as an app (PWA) and works offline.
-- **11 calculators**: mortgage/home loan payoff, loan/EMI, credit card, debt planner (snowball vs avalanche), rent vs buy, SIP/monthly investing, compound interest, savings goal, fixed deposit (CD/GIC/term deposit), retirement & FIRE, inflation.
-- **Numi, the money assistant**: ask in plain words or by voice ("EMI on 10 lakh at 10.5% for 5 years", "when can I retire?"), get the answer with key numbers, follow up ("what if the rate is 1% lower?"), and open the full calculator pre-filled. Explains terms like APR, SIP, FIRE. Can read answers aloud. **Rules-based: no AI API, no server, nothing leaves the device.**
-- **5 countries**: US, UK, Canada, Australia, India: local currency and number formats (₹ lakh grouping), local product names (CD, GIC, ISA-style bonds, term deposits, FD) and Canada's semi-annual mortgage compounding.
-- Save plans on the device, share as a link, print.
+- **One-screen app UI**: calculators in a side rail (pills on phones), inputs and live results side by side, no page scrolling on desktop. Dark-first design with animated background, ripple taps, count-up numbers, animated charts and NeoPOP-style 3D buttons. Installable (PWA), works offline.
+- **11 calculators**: mortgage / home-loan prepayment, loan / EMI, credit card, debt planner (snowball vs avalanche), rent vs buy, SIP / monthly investing, compound interest, savings goal, fixed deposit (CD, GIC, term deposit, Festgeld…), retirement & FIRE, inflation.
+- **Automatic localization from the network**: on first load the country is detected from the visitor's IP (only the 2-letter country code, via api.country.is with get.geojs.io as backup, then device time zone). Currency, number and date formats, language, product names and example rates follow that country. Users can still change country or language from the header chip.
+- **26 countries**: US, Canada, Mexico, Brazil, UK, Ireland, Germany, France, Italy, Spain, Portugal, Switzerland, Austria, Belgium, India, China, Japan, South Korea, Singapore, Australia, New Zealand, UAE, Saudi Arabia, South Africa, Indonesia, Malaysia. Nearby unsupported countries fall back to the closest market.
+- **12 languages**: English, Hindi, Spanish, French, German, Italian, Portuguese, Japanese, Chinese, Korean, Arabic (right-to-left), Indonesian.
+- **Numi**: floating orb in the corner. Ask in any of the 12 languages, by typing or voice; Numi detects the language, answers in it, runs the right calculator, explains terms, handles follow-ups ("what if the rate is 1% lower?") and opens the calculator pre-filled. Rules-based: **no AI API**, nothing leaves the device.
 
 ## Run locally
 ```bash
 python3 -m http.server 8000   # then open http://localhost:8000
-npm test                      # engine, parser, insight and Numi tests (Node 20+)
+npm test                      # engine, parser and multilingual Numi tests (Node 20+)
 ```
 
 ## Structure
 ```
-index.html, mortgage.html, debt.html   pages
-assets/engine.js     pure calculation functions
-assets/insights.js   rules-based insight engine
-assets/parser.js     plain-language input parser
-assets/locale.js     country profiles and formatting
-assets/ui.js         chart, saving, sharing helpers
-assets/calcs.js      calculator catalog and configs
-assets/numi-brain.js Numi: intent + number extraction + answers (pure, tested)
-assets/numi.js       Numi chat UI, voice input, read-aloud
-assets/shell.js      app shell: header, tab bar, Numi sheet
-sw.js, manifest.webmanifest  installable app + offline
-tests/               node:test unit tests
-PROMPT.md            the full build spec for the production site
+index.html                 the app shell
+assets/app.js              routing, rendering, settings, saved plans
+assets/calcs.js            calculator definitions (pure)
+assets/engine.js           the maths (pure, tested)
+assets/countries.js        26 country profiles + network detection
+assets/i18n.js             all text in 12 languages
+assets/numi-brain.js       Numi: language detection, intents, number extraction, answers
+assets/numi.js             Numi corner widget, voice in, read-aloud
+assets/parser.js           multilingual number parsing (lakh, 万, 억, juta, 1.234,56…)
+assets/ui.js               chart, ripples, toasts, saved plans
+PROMPT.md                  full build spec for the production site
 ```
 
-## Next step
-The production build (Astro, 11 countries, city pages, full SEO/GEO) is specified in [PROMPT.md](PROMPT.md). Open this repo in Claude Code and run it phase by phase.
-
-Educational estimates, not financial advice.
+Example rates are illustrative defaults. Non-English text should get a native-speaker review before launch. Educational estimates, not financial advice.

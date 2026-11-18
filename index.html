@@ -3,57 +3,67 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Numora — Money calculators &amp; Numi, your money assistant</title>
-  <meta name="description" content="Free loan, mortgage, SIP, savings, retirement and inflation calculators localized for your country, plus Numi, an assistant that answers money questions in plain words. Private: runs on your device.">
+  <title>Numora · Money, worked out</title>
+  <meta name="description" content="Loan, mortgage, credit card, debt, SIP, savings, deposit, retirement and inflation calculators for 26 countries in 12 languages, with Numi, a private money assistant.">
   <meta name="robots" content="noindex, nofollow">
-  <meta name="theme-color" content="#060a14">
+  <meta name="theme-color" content="#050507">
+  <meta name="color-scheme" content="dark light">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="assets/icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/styles.css">
-  <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"WebSite","name":"Numora","description":"Money calculators localized for each country, with Numi, a plain-language money assistant.","inLanguage":"en"}
-  </script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Numora","applicationCategory":"FinanceApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0"}}</script>
 </head>
 <body>
-  <main class="wrap">
-    <section class="home-hero">
-      <div class="greet" id="greet">Hello</div>
-      <h1>What do you want to<br><span class="grad">work out today?</span></h1>
-      <form class="ask-bar" id="ask-form" role="search">
-        <div class="numi-avatar" aria-hidden="true"><span></span></div>
-        <label class="sr-only" for="ask-q">Ask Numi a money question</label>
-        <input id="ask-q" placeholder="Ask Numi a money question" autocomplete="off">
-        <button>Ask</button>
-      </form>
-      <div class="quick" id="quick"></div>
-    </section>
+  <div class="bg" aria-hidden="true"><i class="o1"></i><i class="o2"></i><i class="o3"></i><div class="grid"></div></div>
 
-    <div class="rail-head"><h2>Popular in <span id="cname">your country</span></h2></div>
-    <div class="rail" id="popular"></div>
+  <div class="boot" id="boot" aria-hidden="true"><span class="mark"></span><span class="bar"><i></i></span></div>
 
-    <div id="saved-wrap" hidden>
-      <div class="rail-head"><h2>Your saved plans</h2><a href="saved.html">See all</a></div>
-      <div class="saved-list" id="saved"></div>
-    </div>
+  <header class="top">
+    <a class="brand tap" href="#"><span class="mark"></span><b>Numora</b></a>
+    <span class="tagline" id="tagline"></span>
+    <span class="sp"></span>
+    <button class="loc tap" id="loc"><span id="loc-flag"></span><span id="loc-txt"></span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+    <button class="ib tap" id="saved-btn"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></svg></button>
+    <button class="ib tap" id="theme-btn"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+    <div class="pop" id="pop" hidden></div>
+  </header>
 
-    <section id="all">
-      <div id="cats"></div>
-    </section>
+  <div class="app">
+    <nav class="rail" id="rail" aria-label="Calculators"></nav>
+    <main class="stage" id="stage">
+      <section class="panel inputs" id="inputs">
+        <div class="p-head"><span class="p-ic" id="p-ic"></span><h1 id="title"></h1></div>
+        <form id="form" novalidate></form>
+      </section>
+      <section class="panel result" id="result" aria-live="polite">
+        <div class="hero">
+          <small id="h-label"></small>
+          <div class="big" id="h-value">—</div>
+          <span class="sub" id="h-sub"></span>
+        </div>
+        <div class="stats" id="stats"></div>
+        <div class="chart" id="chart"></div>
+        <div class="legend" id="legend"></div>
+        <p class="answer" id="answer"></p>
+        <div class="ins" id="insights"></div>
+        <div class="actions">
+          <button class="act tap" id="btn-save"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></svg><span></span></button>
+          <button class="act tap" id="btn-share"><svg viewBox="0 0 24 24"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v14"/></svg><span></span></button>
+          <button class="act pri tap" id="btn-ask"><span class="orb xs"><i></i></span><span></span></button>
+        </div>
+        <p class="disc" id="disc"></p>
+      </section>
+    </main>
+  </div>
 
-    <div class="trust">
-      <div><b>Private by design</b>Every calculation runs on your device. Nothing you type is sent anywhere.</div>
-      <div><b>Your country's rules</b>Local currency, formats and loan conventions, like Canada's semi-annual compounding.</div>
-      <div><b>Free, no sign-up</b>Save plans on this device and share them as a link.</div>
-      <div><b>Works like an app</b><button class="btn ghost install" id="install">Install Numora</button><span id="install-hint">Add it to your home screen from your browser menu.</span></div>
-    </div>
-  </main>
+  <button class="mbar tap" id="mbar"><small id="mbar-l"></small><b id="mbar-v"></b></button>
+  <div class="drawer" id="drawer" hidden></div>
 
-  <footer class="site-footer"><div class="wrap">Numora preview · Educational estimates, not financial advice · Calculations run entirely in your browser.</div></footer>
-
-  <script type="module" src="assets/home.js"></script>
+  <script type="module" src="assets/app.js"></script>
 </body>
 </html>

@@ -1,22 +1,22 @@
 # Numora
 
-> Numora is a set of free money calculators localized for each country (preview: US, UK, Canada, Australia, India), plus Numi, a rules-based assistant that answers money questions in plain words. Everything runs in the browser; no personal data is collected.
+> Numora is a set of free money calculators localized for 26 countries in 12 languages, plus Numi, a rules-based assistant that answers money questions in plain words in the visitor's language. Everything runs in the browser; no personal data is collected.
 
 ## Calculators
-- [Mortgage / home loan payoff](mortgage.html): extra payments, lump sums, goal solver. Applies Canadian semi-annual compounding.
-- [Debt payoff planner](debt.html): snowball vs avalanche with a debt-free date.
-- [Loan repayment / EMI](calc.html?id=emi)
-- [Credit card payoff](calc.html?id=card)
-- [Rent vs buy](calc.html?id=rentbuy)
-- [SIP / monthly investing](calc.html?id=sip), with yearly step-up
-- [Compound interest](calc.html?id=compound)
-- [Savings goal](calc.html?id=goal)
-- [Fixed deposit / CD / GIC / term deposit](calc.html?id=fd)
-- [Retirement & FIRE](calc.html?id=fire)
-- [Inflation](calc.html?id=inflation)
+- [Mortgage / home loan payoff](./#mortgage): extra payments, lump sums, goal solver. Applies Canadian semi-annual compounding.
+- [Debt payoff planner](./#debt): snowball vs avalanche with a debt-free date.
+- [Loan repayment / EMI](./#emi)
+- [Credit card payoff](./#card)
+- [Rent vs buy](./#rentbuy)
+- [SIP / monthly investing](./#sip), with yearly step-up
+- [Compound interest](./#compound)
+- [Savings goal](./#goal)
+- [Fixed deposit / CD / GIC / term deposit](./#fd)
+- [Retirement & FIRE](./#fire)
+- [Inflation](./#inflation)
 
 ## Assistant
-- [Ask Numi](ask.html): type or speak a question such as "EMI on 10 lakh at 10.5% for 5 years"; Numi runs the matching calculator and explains the result.
+- [Ask Numi](./?ask=hi): type or speak a question such as "EMI on 10 lakh at 10.5% for 5 years"; Numi runs the matching calculator and explains the result.
 
 ## Methodology
 - Loan payment: P × r ÷ (1 − (1 + r)^−n), r = monthly rate, n = months.
