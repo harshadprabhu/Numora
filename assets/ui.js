@@ -57,10 +57,17 @@ const PLANS = 'numora.plans';
 export function loadPlans(kind) {
   try { return (JSON.parse(localStorage.getItem(PLANS) || '[]')).filter(p => p.kind === kind); } catch (_) { return []; }
 }
-export function savePlan(kind, name, params) {
+export function loadAllPlans() {
+  try {
+    return JSON.parse(localStorage.getItem(PLANS) || '[]').map(p => ({
+      ...p, href: p.href || `${p.kind === 'mortgage' ? 'mortgage.html' : p.kind === 'debt' ? 'debt.html' : 'calc.html'}?${new URLSearchParams(p.params)}`,
+    }));
+  } catch (_) { return []; }
+}
+export function savePlan(kind, name, params, meta = {}) {
   try {
     const all = JSON.parse(localStorage.getItem(PLANS) || '[]');
-    all.unshift({ kind, name, params, at: Date.now() });
+    all.unshift({ kind, name, params, at: Date.now(), ...meta });
     localStorage.setItem(PLANS, JSON.stringify(all.slice(0, 30)));
     return true;
   } catch (_) { return false; }

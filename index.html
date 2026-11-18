@@ -2,73 +2,58 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Numora — Money calculators that explain your answer</title>
-  <meta name="description" content="Free mortgage, debt and savings calculators localized for your country, with plain-language insights. Runs in your browser; nothing you type leaves your device.">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Numora — Money calculators &amp; Numi, your money assistant</title>
+  <meta name="description" content="Free loan, mortgage, SIP, savings, retirement and inflation calculators localized for your country, plus Numi, an assistant that answers money questions in plain words. Private: runs on your device.">
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#060a14">
+  <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/styles.css">
   <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"WebSite","name":"Numora","description":"Money calculators localized for each country, with plain-language insights.","inLanguage":"en"}
+  {"@context":"https://schema.org","@type":"WebSite","name":"Numora","description":"Money calculators localized for each country, with Numi, a plain-language money assistant.","inLanguage":"en"}
   </script>
 </head>
 <body>
-  <header class="site-header">
-    <div class="wrap">
-      <a class="brand" href="./"><span class="brand-mark" aria-hidden="true"></span>Numora</a>
-      <span class="badge">Preview</span>
-      <span class="spacer"></span>
-      <nav class="nav" aria-label="Main">
-        <a href="mortgage.html">Mortgage payoff</a>
-        <a href="debt.html">Debt payoff</a>
-      </nav>
-      <label class="sr-only" for="country">Country</label>
-      <select id="country" class="control"></select>
-      <button id="theme" class="icon-btn" aria-label="Switch light or dark theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
-    </div>
-  </header>
-
   <main class="wrap">
-    <section class="hero">
-      <div class="eyebrow">Money calculators · <span id="country-name">your country</span></div>
-      <h1>Know your numbers.<br><span class="grad">Then know what to change.</span></h1>
-      <p class="lead">Every Numora calculator uses your country's rules, shows the answer instantly and explains in plain words which small change makes the biggest difference. Everything runs in your browser, so nothing you type leaves your device.</p>
+    <section class="home-hero">
+      <div class="greet" id="greet">Hello</div>
+      <h1>What do you want to<br><span class="grad">work out today?</span></h1>
+      <form class="ask-bar" id="ask-form" role="search">
+        <div class="numi-avatar" aria-hidden="true"><span></span></div>
+        <label class="sr-only" for="ask-q">Ask Numi a money question</label>
+        <input id="ask-q" placeholder="Ask Numi a money question" autocomplete="off">
+        <button>Ask</button>
+      </form>
+      <div class="quick" id="quick"></div>
     </section>
 
-    <section aria-labelledby="tools">
-      <h2 id="tools" class="sr-only">Calculators</h2>
-      <div class="grid-cards">
-        <a class="card tool-card" href="mortgage.html">
-          <span class="tag">Live in preview</span>
-          <h3>Mortgage payoff</h3>
-          <p>See how extra payments or a lump sum cut years and interest off your <span class="mterm">mortgage</span>.</p>
-        </a>
-        <a class="card tool-card" href="debt.html">
-          <span class="tag">Live in preview</span>
-          <h3>Debt payoff: snowball vs avalanche</h3>
-          <p>Get a month-by-month plan to clear cards and loans, and see which method saves more.</p>
-        </a>
-        <div class="card tool-card"><span class="tag soon">Coming next</span><h3>Take-home pay</h3><p>Your net pay after tax, with local rules.</p></div>
-        <div class="card tool-card"><span class="tag soon">Coming next</span><h3>Rent vs buy</h3><p>The year buying starts to beat renting where you live.</p></div>
-        <div class="card tool-card"><span class="tag soon">Coming next</span><h3>Retirement &amp; FIRE</h3><p>Your number, and a range of outcomes rather than one guess.</p></div>
-        <div class="card tool-card"><span class="tag soon">Coming next</span><h3>Savings goal</h3><p>How much to save each month to get there.</p></div>
-      </div>
+    <div class="rail-head"><h2>Popular in <span id="cname">your country</span></h2></div>
+    <div class="rail" id="popular"></div>
+
+    <div id="saved-wrap" hidden>
+      <div class="rail-head"><h2>Your saved plans</h2><a href="saved.html">See all</a></div>
+      <div class="saved-list" id="saved"></div>
+    </div>
+
+    <section id="all">
+      <div id="cats"></div>
     </section>
+
+    <div class="trust">
+      <div><b>Private by design</b>Every calculation runs on your device. Nothing you type is sent anywhere.</div>
+      <div><b>Your country's rules</b>Local currency, formats and loan conventions, like Canada's semi-annual compounding.</div>
+      <div><b>Free, no sign-up</b>Save plans on this device and share them as a link.</div>
+      <div><b>Works like an app</b><button class="btn ghost install" id="install">Install Numora</button><span id="install-hint">Add it to your home screen from your browser menu.</span></div>
+    </div>
   </main>
 
-  <footer class="site-footer">
-    <div class="wrap">Numora preview · Educational estimates, not financial advice · Calculations run entirely in your browser.</div>
-  </footer>
+  <footer class="site-footer"><div class="wrap">Numora preview · Educational estimates, not financial advice · Calculations run entirely in your browser.</div></footer>
 
-  <script type="module">
-    import { COUNTRIES, mountCountrySwitcher, mountThemeToggle } from './assets/locale.js';
-    mountThemeToggle();
-    const apply = code => {
-      document.getElementById('country-name').textContent = COUNTRIES[code].name;
-      document.querySelectorAll('.mterm').forEach(e => e.textContent = COUNTRIES[code].mortgageTerm);
-    };
-    apply(mountCountrySwitcher(apply));
-  </script>
+  <script type="module" src="assets/home.js"></script>
 </body>
 </html>

@@ -20,7 +20,7 @@ export function parseAmount(raw) {
 const AMOUNT = String.raw`(?:[£$€₹¥]|rs\.?\s?)?\d[\d.,]*\s*(?:k|thousand|mn|million|lakhs?|lac|crores?|cr|m|l)?\b`;
 
 /** Find all amounts with their position. */
-function amounts(text) {
+export function amounts(text) {
   const re = new RegExp(AMOUNT, 'gi');
   const out = [];
   let m;

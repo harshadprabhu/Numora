@@ -2,12 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Mortgage Payoff Calculator — extra payments &amp; lump sums | Numora</title>
   <meta name="description" content="See how much time and interest extra mortgage payments or a lump sum save, using your country's rules. Instant, private, with plain-language insights.">
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#060a14">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/styles.css">
   <script type="application/ld+json">
   {"@context":"https://schema.org","@graph":[
@@ -21,20 +25,6 @@
   </script>
 </head>
 <body>
-  <header class="site-header">
-    <div class="wrap">
-      <a class="brand" href="./"><span class="brand-mark" aria-hidden="true"></span>Numora</a>
-      <span class="badge">Preview</span>
-      <span class="spacer"></span>
-      <nav class="nav" aria-label="Main">
-        <a href="mortgage.html" aria-current="page">Mortgage payoff</a>
-        <a href="debt.html">Debt payoff</a>
-      </nav>
-      <label class="sr-only" for="country">Country</label>
-      <select id="country" class="control"></select>
-      <button id="theme" class="icon-btn" aria-label="Switch light or dark theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
-    </div>
-  </header>
 
   <main class="wrap">
     <section class="hero" style="padding-bottom:0">
@@ -134,6 +124,7 @@
           </div>
           <ul class="plans" id="plans" style="list-style:none;padding:0;margin:12px 0 0"></ul>
         </div>
+        <button type="button" class="card ask-about" id="ask-numi"><div class="numi-avatar" aria-hidden="true"><span></span></div><div><b>Ask Numi about this</b><span>"What if the rate is 1% lower?"</span></div></button>
         <div class="card partner">
           <small>Partner offer · placeholder in preview</small>
           <p style="margin:6px 0 0">Compare remortgage rates from lenders in <span class="cname2"></span>.</p>

@@ -107,3 +107,56 @@ test('debt insights handle a budget below minimums', () => {
   const out = debtInsights(debts, 50, res, { ...f }, 100);
   assert.equal(out[0].tone, 'warn');
 });
+
+import { emi, sip, compound, savingsGoal, fixedDeposit, fire, inflation, creditCard, rentVsBuy } from '../assets/engine.js';
+
+test('EMI: 10 lakh at 10% for 5 years ≈ 21,247', () => {
+  close(emi({ principal: 1000000, ratePct: 10, years: 5 }).emi, 21247.04, 0.05);
+});
+
+test('SIP: 10,000/month at 12% for 10 years ≈ 23.23 lakh (start-of-month)', () => {
+  const r = sip({ monthly: 10000, ratePct: 12, years: 10 });
+  close(r.invested, 1200000);
+  close(r.value, 2323390.76, 5);
+});
+
+test('SIP step-up increases contributions yearly', () => {
+  const r = sip({ monthly: 1000, ratePct: 0, years: 2, stepUpPct: 10 });
+  close(r.invested, 12000 + 13200);
+});
+
+test('compound: 10,000 at 5% yearly compounding for 10 years = 16,288.95', () => {
+  close(compound({ principal: 10000, ratePct: 5, years: 10, perYear: 1 }).value, 16288.95, 0.05);
+});
+
+test('savings goal: monthly amount reaches the target', () => {
+  const g = savingsGoal({ target: 50000, current: 5000, ratePct: 4, years: 5 });
+  const check = compound({ principal: 5000, monthly: g.monthly, ratePct: 4, years: 5, perYear: 12 });
+  close(check.value, 50000, 0.5);
+});
+
+test('FD: 1 lakh at 7% quarterly for 5 years ≈ 1,41,478', () => {
+  close(fixedDeposit({ principal: 100000, ratePct: 7, years: 5, perYear: 4 }).maturity, 141478.4, 1);
+});
+
+test('FIRE target is spend / withdrawal rate and is reached', () => {
+  const f = fire({ age: 30, annualSpend: 40000, savings: 50000, monthly: 2000, ratePct: 7, inflationPct: 3 });
+  assert.equal(f.target, 1000000);
+  assert.ok(f.years > 5 && f.years < 40);
+  assert.ok(f.optimisticAge <= f.age && f.age <= f.pessimisticAge);
+});
+
+test('inflation doubles in ~10 years at 7.2%', () => {
+  close(inflation({ amount: 100, inflationPct: 7.2, years: 10 }).futureCost, 200.4, 0.2);
+});
+
+test('credit card: payment below interest never pays off', () => {
+  assert.ok(creditCard({ balance: 5000, aprPct: 24, payment: 90 }).neverPaysOff);
+  assert.ok(creditCard({ balance: 5000, aprPct: 24, payment: 300 }).months < 24);
+});
+
+test('rent vs buy returns a series per year', () => {
+  const r = rentVsBuy({ price: 400000, depositPct: 20, ratePct: 6, loanYears: 30, rent: 1800, rentGrowthPct: 3, priceGrowthPct: 3, investPct: 6, horizon: 15 });
+  assert.equal(r.buyNW.length, 16);
+  assert.equal(r.rentNW.length, 16);
+});

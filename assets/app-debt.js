@@ -1,4 +1,5 @@
-import { COUNTRIES, fmt, mountCountrySwitcher, mountThemeToggle } from './locale.js';
+import { COUNTRIES, fmt } from './locale.js';
+import { mountShell, openNumi } from './shell.js';
 import { debtPayoff } from './engine.js';
 import { debtInsights } from './insights.js';
 import { parseDebts } from './parser.js';
@@ -6,7 +7,6 @@ import { lineChart, copyLink, readNumber } from './ui.js';
 
 const $ = id => document.getElementById(id);
 let country, f, c;
-mountThemeToggle();
 
 const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
 
@@ -97,7 +97,7 @@ function params() {
 
 // Init
 const qs = Object.fromEntries(new URLSearchParams(location.search));
-country = mountCountrySwitcher(code => { country = code; setDefaults(); render(); });
+country = mountShell('calcs', code => { country = code; setDefaults(); render(); });
 if (qs.c && COUNTRIES[qs.c]) { country = qs.c; $('country').value = qs.c; }
 let fromUrl = null;
 try { fromUrl = qs.d ? JSON.parse(qs.d) : null; } catch (_) { fromUrl = null; }
@@ -124,3 +124,5 @@ $('nl-go').addEventListener('click', () => {
   render();
 });
 $('nl').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('nl-go').click(); } });
+
+$('ask-numi').addEventListener('click', () => openNumi('What is the avalanche method?', { intent: 'debt' }));

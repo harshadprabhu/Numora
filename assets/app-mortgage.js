@@ -1,4 +1,5 @@
-import { COUNTRIES, fmt, mountCountrySwitcher, mountThemeToggle } from './locale.js';
+import { COUNTRIES, fmt } from './locale.js';
+import { mountShell, openNumi } from './shell.js';
 import { mortgagePayoff, validateMortgage, solveExtraForTarget } from './engine.js';
 import { mortgageInsights } from './insights.js';
 import { parseMortgage } from './parser.js';
@@ -8,7 +9,6 @@ const $ = id => document.getElementById(id);
 const FIELDS = ['balance', 'ratePct', 'yearsLeft', 'extra', 'lumpSum', 'lumpMonth'];
 let country, f, c;
 
-mountThemeToggle();
 
 function setDefaults(fromUrl) {
   c = COUNTRIES[country];
@@ -106,7 +106,7 @@ function renderPlans() {
 // Init
 ['balance', 'extra', 'lumpSum'].forEach(id => formatOnBlur($(id), () => c.locale));
 const qs = Object.fromEntries(new URLSearchParams(location.search));
-country = mountCountrySwitcher(code => { country = code; setDefaults(); render(); });
+country = mountShell('calcs', code => { country = code; setDefaults(); render(); });
 if (qs.c && COUNTRIES[qs.c]) { country = qs.c; $('country').value = qs.c; }
 setDefaults(Object.keys(qs).length ? qs : null);
 render();
@@ -149,6 +149,11 @@ $('print').addEventListener('click', () => window.print());
 $('save').addEventListener('click', () => {
   const i = read();
   const name = `${f.money(i.balance)} at ${i.ratePct}% + ${f.money(i.extra)}/mo`;
-  if (savePlan('mortgage', name, params())) { renderPlans(); toast('Saved on this device'); }
+  if (savePlan('mortgage', name, params(), { title: c.mortgageTitle })) { renderPlans(); toast('Saved on this device'); }
   else toast('Saving is blocked in this browser');
+});
+
+$('ask-numi').addEventListener('click', () => {
+  const v = read();
+  openNumi(null, { intent: 'mortgage', values: v });
 });

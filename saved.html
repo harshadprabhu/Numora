@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#060a14">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+  <title>Saved plans | Numora</title>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero" style="padding-bottom:10px">
+      <div class="eyebrow">On this device only</div>
+      <h1>Saved plans</h1>
+    </section>
+    <div class="saved-list" id="list"></div>
+  </main>
+  <footer class="site-footer"><div class="wrap">Plans are stored in this browser only. Clearing site data removes them.</div></footer>
+  <script type="module">
+    import { mountShell } from './assets/shell.js';
+    import { loadAllPlans, deletePlan } from './assets/ui.js';
+    mountShell('saved');
+    const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+    function draw() {
+      const plans = loadAllPlans();
+      const el = document.getElementById('list');
+      if (!plans.length) { el.innerHTML = '<div class="card empty">No saved plans yet. Open any calculator and tap <b>Save plan</b>.<br><br><a class="btn" href="./#all" style="text-decoration:none">Browse calculators</a></div>'; return; }
+      el.innerHTML = plans.map(p => '<div class="saved-item"><a href="' + esc(p.href) + '"><b>' + esc(p.name) + '</b><small>' + esc(p.title || '') + ' · ' + new Date(p.at).toLocaleDateString() + '</small></a><button class="icon-btn" data-k="' + esc(p.kind) + '" data-at="' + p.at + '" aria-label="Delete">✕</button></div>').join('');
+      el.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { deletePlan(b.dataset.k, Number(b.dataset.at)); draw(); }));
+    }
+    draw();
+  </script>
+</body>
+</html>
