@@ -20,7 +20,7 @@ Working rules:
 2. **No AI or LLM APIs, and no paid third-party APIs.** All "smart" behaviour is deterministic code running in the browser.
 3. **All calculations run client-side** from one shared TypeScript engine of pure functions.
 4. **No personal data leaves the browser.** No accounts. Saving uses localStorage; sharing uses URL-encoded inputs.
-5. **Preview first, launch later.** The site is hosted on GitHub Pages at `https://harshadprabhu.github.io/numora/` for review. While in preview it must not be indexed (see section 10).
+5. **Preview first, launch later.** The site is hosted on GitHub Pages at `https://harshadprabhu.github.io/Numora/` for review. While in preview it must not be indexed (see section 10).
 
 ## 2. Stack
 

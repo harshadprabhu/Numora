@@ -2,7 +2,7 @@
 
 Money calculators that explain your answer, localized for each country. **Preview build**: not indexed by search engines.
 
-**Live preview:** https://harshadprabhu.github.io/numora/
+**Live preview:** https://harshadprabhu.github.io/Numora/
 
 ## What's in this preview
 - **Mortgage / home loan payoff**: extra monthly payments, lump sum, goal solver ("mortgage-free in 15 years"), before/after chart, year-by-year schedule.
