@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Debt Payoff Calculator — snowball vs avalanche | Numora</title>
+  <meta name="description" content="Compare the snowball and avalanche methods, get your debt-free date and a month-by-month plan. Private, instant, localized for your country.">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#060a14">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/styles.css">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@graph":[
+    {"@type":"WebApplication","name":"Numora Debt Payoff Calculator","applicationCategory":"FinanceApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0"},"description":"Compares snowball and avalanche debt repayment and gives a debt-free date."},
+    {"@type":"FAQPage","mainEntity":[
+      {"@type":"Question","name":"What is the difference between snowball and avalanche?","acceptedAnswer":{"@type":"Answer","text":"Snowball pays off the smallest balance first for quick wins; avalanche pays the highest interest rate first, which costs the least interest overall."}},
+      {"@type":"Question","name":"Which method is best?","acceptedAnswer":{"@type":"Answer","text":"Avalanche always costs the same or less interest. Snowball can be better if early wins help you stick to the plan."}}
+    ]}
+  ]}
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./"><span class="brand-mark" aria-hidden="true"></span>Numora</a>
+      <span class="badge">Preview</span>
+      <span class="spacer"></span>
+      <nav class="nav" aria-label="Main">
+        <a href="mortgage.html">Mortgage payoff</a>
+        <a href="debt.html" aria-current="page">Debt payoff</a>
+      </nav>
+      <label class="sr-only" for="country">Country</label>
+      <select id="country" class="control"></select>
+      <button id="theme" class="icon-btn" aria-label="Switch light or dark theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero" style="padding-bottom:0">
+      <div class="eyebrow"><span id="flag"></span> <span id="cname"></span> · Debt payoff</div>
+      <h1>Debt payoff calculator: snowball vs avalanche</h1>
+      <p class="answer" id="answer" aria-live="polite">Calculating…</p>
+    </section>
+
+    <div class="calc">
+      <div>
+        <div class="card nl-card">
+          <label for="nl" style="font-weight:600;font-size:14px">Describe your situation <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+          <div class="nl" style="margin-top:8px">
+            <input id="nl" type="text" placeholder="e.g. I owe 18k on 3 cards at 24%, can pay 900 a month" autocomplete="off">
+            <button class="btn" id="nl-go">Fill in</button>
+          </div>
+          <div class="chips" id="nl-chips" aria-live="polite"></div>
+        </div>
+
+        <form class="card" id="form" style="margin-top:16px" novalidate>
+          <div class="debt-row debt-head"><span>Name</span><span>Balance</span><span>Rate % / yr</span><span>Minimum / mo</span><span></span></div>
+          <div id="debts"></div>
+          <button type="button" class="btn ghost" id="add">+ Add a debt</button>
+          <div class="field" style="margin-top:18px">
+            <label for="budget">Total you can pay each month <span class="hint" id="min-hint"></span></label>
+            <input id="budgetRange" type="range" step="1" aria-label="Monthly budget slider">
+            <div class="input-row"><span class="unit cur"></span><input id="budget" type="text" inputmode="decimal"></div>
+          </div>
+        </form>
+
+        <div class="card section">
+          <h2>Total debt over time</h2>
+          <div class="legend"><span><i style="background:var(--accent)"></i>Avalanche</span><span><i style="background:#818cf8"></i>Snowball</span></div>
+          <div class="chart-wrap" id="chart"></div>
+        </div>
+      </div>
+
+      <aside class="result-col" aria-label="Results">
+        <div class="card result-card">
+          <div class="result-label">Debt-free by</div>
+          <div class="result-value" id="r-date">—</div>
+          <div class="result-sub" id="r-sub"></div>
+          <div class="compare" style="margin-top:14px">
+            <div class="method" id="m-ava"><h3>Avalanche</h3><div class="stat-label">Highest rate first</div><div class="stat-value" id="ava-int">—</div><div class="stat-label" id="ava-time"></div><ol class="order" id="ava-order"></ol></div>
+            <div class="method" id="m-snow"><h3>Snowball</h3><div class="stat-label">Smallest balance first</div><div class="stat-value" id="snow-int">—</div><div class="stat-label" id="snow-time"></div><ol class="order" id="snow-order"></ol></div>
+          </div>
+        </div>
+        <div class="card insights">
+          <h2>What would help most</h2>
+          <div id="insights"></div>
+          <p class="disclaimer">Educational estimate, not financial advice. Rates and minimums are as you entered them.</p>
+        </div>
+        <div class="card">
+          <div class="actions">
+            <button class="btn ghost" id="share">Copy link</button>
+            <button class="btn ghost" id="print">Print</button>
+          </div>
+        </div>
+        <div class="card partner">
+          <small>Partner offer · placeholder in preview</small>
+          <p style="margin:6px 0 0">Compare lower-rate debt consolidation options in <span class="cname2"></span>.</p>
+        </div>
+      </aside>
+    </div>
+
+    <section class="card section">
+      <h2>How this calculator works</h2>
+      <p>Each month, interest is added to every debt at its yearly rate ÷ 12. Minimum payments go to every debt, and whatever is left of your budget goes to one target debt. When a debt is cleared, its payment rolls on to the next target.</p>
+      <ul>
+        <li><strong>Avalanche:</strong> target the highest interest rate first. This always costs the least interest.</li>
+        <li><strong>Snowball:</strong> target the smallest balance first. You clear debts sooner, which helps some people stay motivated.</li>
+      </ul>
+      <p>Assumptions: rates stay fixed, no new spending on the cards, no fees.</p>
+    </section>
+
+    <section class="card section faq">
+      <h2>Frequently asked questions</h2>
+      <details><summary>Which method should I choose?</summary><p>If the interest difference is small, pick the one you'll stick with. If avalanche saves a lot, it's usually worth it.</p></details>
+      <details><summary>What if my budget doesn't cover the minimums?</summary><p>The calculator will tell you. Contact your lenders early: many offer hardship plans, and free debt advice services exist in most countries.</p></details>
+      <details><summary>Is my data stored?</summary><p>No. Everything is calculated in your browser.</p></details>
+    </section>
+  </main>
+
+  <footer class="site-footer"><div class="wrap">Numora preview · Educational estimates, not financial advice · Calculations run entirely in your browser.</div></footer>
+
+  <script type="module" src="assets/app-debt.js"></script>
+</body>
+</html>

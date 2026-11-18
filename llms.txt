@@ -1,0 +1,11 @@
+# Numora
+
+> Numora is a set of free money calculators localized for each country (preview: US, UK, Canada, Australia, India). All calculations run in the browser; no personal data is collected.
+
+## Calculators
+- [Mortgage payoff calculator](mortgage.html): how extra monthly payments and lump sums shorten a mortgage and cut interest. Applies Canadian semi-annual compounding.
+- [Debt payoff calculator](debt.html): compares snowball (smallest balance first) and avalanche (highest rate first) and gives a debt-free date.
+
+## Methodology
+- Mortgage payment: P × r ÷ (1 − (1 + r)^−n), r = monthly rate, n = months left.
+- Debts: monthly interest at APR ÷ 12, minimums on every debt, the remainder to the target debt, rolling over when cleared.
